@@ -1,0 +1,49 @@
+# 隐藏不必要的警告和错误，保持界面整洁
+$ErrorActionPreference = "SilentlyContinue"
+
+Write-Host "===========================================================" -ForegroundColor Gray
+Write-Host " Nameless - 硬件信息采集工具" -ForegroundColor Cyan
+Write-Host "===========================================================" -ForegroundColor Gray
+
+# 1. 主板检测 (从注册表读取)
+$Brand = (Get-ItemProperty -Path "HKLM:\HARDWARE\DESCRIPTION\System\BIOS").SystemManufacturer
+$Model = (Get-ItemProperty -Path "HKLM:\HARDWARE\DESCRIPTION\System\BIOS").BaseBoardProduct
+Write-Host "[*] 主板品牌: $Brand"
+Write-Host "[*] 主板型号: $Model"
+
+# 2. 硬盘信息
+Write-Host "`n[+] 硬盘名称及物理序列号:" -ForegroundColor Green
+Get-CimInstance Win32_DiskDrive | Select-Object Model, SerialNumber | Format-Table -HideTableHeaders
+
+# 3. CPU 序列号
+$Cpu = (Get-CimInstance Win32_Processor).SerialNumber
+Write-Host "[+] CPU序列号: $Cpu" -ForegroundColor Yellow
+
+# 4. BIOS 序列号
+$Bios = (Get-CimInstance Win32_BIOS).SerialNumber
+Write-Host "[+] BIOS序列号: $Bios" -ForegroundColor Yellow
+
+# 5. 主板物理序列号
+$Baseboard = (Get-CimInstance Win32_BaseBoard).SerialNumber
+Write-Host "[+] 主板物理序列号: $Baseboard" -ForegroundColor Yellow
+
+# 6. 主板UUID
+$Uuid = (Get-CimInstance Win32_ComputerSystemProduct).UUID
+Write-Host "[+] 主板UUID: $Uuid" -ForegroundColor Magenta
+
+# 7. 内存条ID
+Write-Host "`n[+] 内存条ID (SerialNumber)" -ForegroundColor Cyan
+Get-CimInstance Win32_PhysicalMemory | Select-Object -ExpandProperty SerialNumber
+
+# 8. 网卡与网络信息
+Write-Host "`n[+] 网卡信息 (MAC & IP):" -ForegroundColor Green
+Get-NetAdapter | Where-Object { $_.Status -eq "Up" } | Format-Table Name, InterfaceDescription, MacAddress -HideTableHeaders
+getmac
+Write-Host ""
+# 9. 公网IP
+$PublicIP = try { (Invoke-RestMethod -Uri "http://myip.ipip.net").Trim() } catch { "无法获取公网IP" }
+Write-Host "[*] 公网IP信息: $PublicIP" -ForegroundColor Green
+ipconfig
+Write-Host "===========================================================" -ForegroundColor Gray
+
+Read-Host "按回车键退出程序"
