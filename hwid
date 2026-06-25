@@ -45,3 +45,4 @@ $PublicIP = try { (Invoke-RestMethod -Uri "http://myip.ipip.net").Trim() } catch
 Write-Host "[*] 公网IP信息: $PublicIP" -ForegroundColor Green
 ipconfig
 Write-Host "===========================================================" -ForegroundColor Gray
+Read-Host "按回车键退出程序"
